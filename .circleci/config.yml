@@ -1,0 +1,89 @@
+version: 2.1
+
+workflows:
+  build:
+    jobs:
+      - build:
+          context: olist-python
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8.5-buster
+
+        # Global Variables
+        environment:
+            LOG_LEVEL: DEBUG
+            LOGGERS: python_project_template
+            AWS_DEFAULT_REGION: us-east-1
+            AWS_ACCESS_KEY_ID:
+            AWS_SECRET_ACCESS_KEY:
+            REQUEST_TIMEOUT: 5
+            OCSIM_CLIENT_ID: client_id
+            OCSIM_CLIENT_SECRET: client_secret
+            OCSIM_TOKEN_URL: http://localhost:5000/o/token/
+            SENTRY_DSN: https://id:pass@sentry.io/199884
+            LOGENTRIES_TOKEN: token
+            ELASTIC_APM_SERVICE_NAME: python-project-template
+            ELASTIC_APM_SECRET_TOKEN: token
+            ELASTIC_APM_SERVER_URL: localhost
+            ELASTIC_APM_SERVER_TIMEOUT: 10s
+            ELASTIC_APM_TRANSACTION_SAMPLE_RATE: 0.1
+            ELASTIC_APM_TRANSACTION_MAX_SPANS: 30
+            ELASTIC_APM_DISABLE_SEND: True
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          name: "Restoring dependencies cache"
+          keys:
+          - v1-dependencies-{{ checksum "poetry.lock" }}
+
+      - run:
+          name: install dependencies
+          command: poetry install
+
+      - save_cache:
+          name: "Saving dependencies cache"
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+          key: v1-dependencies-{{ checksum "poetry.lock" }}
+
+      - restore_cache:
+          name: "Restoring hooks cache"
+          key: v1-hooks-{{ checksum ".pre-commit-config.yaml" }}
+
+      - run:
+          name: linters
+          command: SKIP=no-commit-to-branch poetry run pre-commit run -a -v
+
+      - save_cache:
+          name: "Saving hooks cache"
+          paths:
+            - "~/.cache/pre-commit/"
+          key: v1-hooks-{{ checksum ".pre-commit-config.yaml" }}
+
+      - run:
+          name: dead-fixtures-check
+          command: poetry run pytest --dead-fixtures
+
+      - run:
+          name: validate-envvars
+          command: poetry run pytest -vv -s --cov python_project_template --validate-envvars
+
+      - run:
+          name: run tests
+          command: |
+            poetry run pytest -vv -s --cov python_project_template --cov-report=term-missing --cov-report=html
+
+      - store_artifacts:
+          path: htmlcov
+          destination: test-reports
+
+branches:
+  only:
+    - main

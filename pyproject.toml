@@ -1,0 +1,35 @@
+[tool.black]
+line-length = 110
+target-version = ["py38"]
+
+[tool.isort]
+line_length = 110
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+known_local_folder = "apps,utils,tests,python_project_template"
+sections = "FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+default_section = "THIRDPARTY"
+
+[tool.poetry]
+name = "python_project_template"
+version = "0.1.0"
+description = "Template for python projects"
+
+[tool.poetry.dependencies]
+python = "3.8.6"
+prettyconf = "*"
+
+[tool.poetry.dev-dependencies]
+coverage = "*"
+ipdb = "*"
+ipython = "*"
+pre-commit = "*"
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+pytest-deadfixtures = "*"
+pytest-envvars = "*"
+pytest-randomly = "*"
+safety = "*"
