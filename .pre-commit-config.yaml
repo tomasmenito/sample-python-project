@@ -47,17 +47,17 @@ repos:
       args: ['--exclude=docs/*,*migrations*', '--ignore=E501,W503,E203']
 
 - repo: https://github.com/PyCQA/isort
-  rev: 5.8.0
+  rev: 5.9.3
   hooks:
     - id: isort
       additional_dependencies: ['toml']
 
 - repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.8.0
+  rev: v1.9.0
   hooks:
     - id: python-check-mock-methods
 
 - repo: https://github.com/psf/black
-  rev: 21.5b1
+  rev: 21.7b0
   hooks:
     - id: black
